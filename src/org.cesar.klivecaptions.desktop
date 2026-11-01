@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=KLiveCaptions
+GenericName=Subtítulos y Traducción en Tiempo Real
+Comment=Subtítulos en vivo (Live Captions) sobre PipeWire y Wayland al estilo macOS
+Exec=klivecaptions
+Icon=preferences-desktop-locale
+Type=Application
+Categories=AudioVideo;Utility;Accessibility;KDE;Qt;
+StartupNotify=false

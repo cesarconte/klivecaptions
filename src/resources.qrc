@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/org/cesar/klivecaptions">
+        <file>qml/main.qml</file>
+    </qresource>
+</RCC>
