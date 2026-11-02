@@ -10,56 +10,40 @@ import QtQuick.Controls as QQC2
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 
-Window {
+Kirigami.ApplicationWindow {
     id: rootWindow
     width: 820
-    height: 155
+    height: 160
     visible: true
-    color: "transparent"
-    flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
+    title: i18n("KLiveCaptions — Subtítulos en Tiempo Real")
 
-    Rectangle {
-        id: glassCapsule
+    ColumnLayout {
         anchors.fill: parent
-        anchors.margins: Kirigami.Units.smallSpacing
-        radius: Kirigami.Units.largeSpacing
-        color: Kirigami.Theme.backgroundColor
-        border.width: 1
-        border.color: Kirigami.ColorUtils.linearInterpolation(Kirigami.Theme.backgroundColor, Kirigami.Theme.textColor, 0.18)
+        anchors.margins: Kirigami.Units.mediumSpacing
+        spacing: Kirigami.Units.smallSpacing
 
-        ColumnLayout {
-            anchors.fill: parent
-            anchors.margins: Kirigami.Units.mediumSpacing
+        // Top Control Bar
+        RowLayout {
+            Layout.fillWidth: true
             spacing: Kirigami.Units.smallSpacing
 
-            // Top Control Bar
-            RowLayout {
+            // Reactive audio indicator dot
+            Rectangle {
+                implicitWidth: 10
+                implicitHeight: 10
+                radius: 5
+                color: CaptionEngine.running ? Kirigami.Theme.positiveTextColor : Kirigami.Theme.disabledTextColor
+                scale: CaptionEngine.running ? (1.0 + CaptionEngine.audioLevel * 0.45) : 1.0
+                Behavior on scale { NumberAnimation { duration: 90 } }
+            }
+
+            QQC2.Label {
+                text: CaptionEngine.statusText
+                color: Kirigami.Theme.disabledTextColor
+                font.pixelSize: Kirigami.Theme.smallFont.pixelSize
                 Layout.fillWidth: true
-                spacing: Kirigami.Units.smallSpacing
-
-                // Reactive audio indicator dot
-                Rectangle {
-                    implicitWidth: 10
-                    implicitHeight: 10
-                    radius: 5
-                    color: CaptionEngine.running ? Kirigami.Theme.positiveTextColor : Kirigami.Theme.disabledTextColor
-                    scale: CaptionEngine.running ? (1.0 + CaptionEngine.audioLevel * 0.45) : 1.0
-                    Behavior on scale { NumberAnimation { duration: 90 } }
-                }
-
-                QQC2.Label {
-                    text: "KLiveCaptions"
-                    font.bold: true
-                    color: Kirigami.Theme.textColor
-                }
-
-                QQC2.Label {
-                    text: "· " + CaptionEngine.statusText
-                    color: Kirigami.Theme.disabledTextColor
-                    font.pixelSize: Kirigami.Theme.smallFont.pixelSize
-                    Layout.fillWidth: true
-                    elide: Text.ElideRight
-                }
+                elide: Text.ElideRight
+            }
 
                 // Play / Pause Live Captions
                 QQC2.ToolButton {
@@ -136,13 +120,6 @@ Window {
                     QQC2.ToolTip.visible: hovered
                     QQC2.ToolTip.text: "Limpiar subtítulos"
                 }
-
-                QQC2.ToolButton {
-                    icon.name: "window-close-symbolic"
-                    onClicked: Qt.quit()
-                    QQC2.ToolTip.visible: hovered
-                    QQC2.ToolTip.text: "Cerrar KLiveCaptions"
-                }
             }
 
             Rectangle {
@@ -185,5 +162,4 @@ Window {
                 }
             }
         }
-    }
 }
