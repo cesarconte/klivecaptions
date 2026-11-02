@@ -42,7 +42,7 @@ Window {
                     implicitWidth: 10
                     implicitHeight: 10
                     radius: 5
-                    color: CaptionEngine.running ? "#00e676" : "#78909c"
+                    color: CaptionEngine.running ? Kirigami.Theme.positiveTextColor : Kirigami.Theme.disabledTextColor
                     scale: CaptionEngine.running ? (1.0 + CaptionEngine.audioLevel * 0.45) : 1.0
                     Behavior on scale { NumberAnimation { duration: 90 } }
                 }
@@ -50,12 +50,12 @@ Window {
                 QQC2.Label {
                     text: "KLiveCaptions"
                     font.bold: true
-                    color: "#ffffff"
+                    color: Kirigami.Theme.textColor
                 }
 
                 QQC2.Label {
                     text: "· " + CaptionEngine.statusText
-                    color: "#b0bec5"
+                    color: Kirigami.Theme.disabledTextColor
                     font.pixelSize: Kirigami.Theme.smallFont.pixelSize
                     Layout.fillWidth: true
                     elide: Text.ElideRight
@@ -148,7 +148,7 @@ Window {
             Rectangle {
                 Layout.fillWidth: true
                 height: 1
-                color: Qt.rgba(1.0, 1.0, 1.0, 0.12)
+                color: Kirigami.ColorUtils.linearInterpolation(Kirigami.Theme.backgroundColor, Kirigami.Theme.textColor, 0.15)
             }
 
             // Live Caption Main Display Area
@@ -164,7 +164,7 @@ Window {
                         : (CaptionEngine.running
                             ? "Esperando voz o audio en reproducción…"
                             : "Pulsa «Iniciar» para subtitular en tiempo real el audio del sistema o micrófono.")
-                    color: CaptionEngine.currentCaption.length > 0 ? "#ffffff" : "#90a4ae"
+                    color: CaptionEngine.currentCaption.length > 0 ? Kirigami.Theme.textColor : Kirigami.Theme.disabledTextColor
                     font.pixelSize: 18
                     font.weight: Font.Medium
                     wrapMode: Text.WordWrap
@@ -176,7 +176,7 @@ Window {
                     Layout.fillWidth: true
                     visible: CaptionEngine.translateEnabled && CaptionEngine.currentTranslation.length > 0
                     text: "🌐 " + CaptionEngine.currentTranslation
-                    color: "#80d8ff"
+                    color: Kirigami.Theme.highlightColor
                     font.pixelSize: 15
                     font.italic: true
                     wrapMode: Text.WordWrap
