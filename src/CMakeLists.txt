@@ -23,7 +23,6 @@ target_link_libraries(klivecaptions PRIVATE
     Qt6::QuickControls2
     KF6::CoreAddons
     KF6::I18n
-    LayerShellQt::Interface
 )
 
 install(TARGETS klivecaptions DESTINATION ${KDE_INSTALL_BINDIR})
