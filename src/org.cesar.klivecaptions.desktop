@@ -5,5 +5,5 @@ Comment=Subtítulos en vivo (Live Captions) sobre PipeWire y Wayland al estilo m
 Exec=klivecaptions
 Icon=preferences-desktop-locale
 Type=Application
-Categories=AudioVideo;Utility;Accessibility;KDE;Qt;
+Categories=Utility;Accessibility;KDE;Qt;
 StartupNotify=false
