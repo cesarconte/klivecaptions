@@ -28,10 +28,14 @@ CachyWindow {
     // Translations come from the design system helper, which always falls back
     // to the source text when the application has no catalogue yet.
     title: CachyI18n.i18n("KLiveCaptions — Subtítulos en Tiempo Real")
-    width: 900
-    height: 250
+
+    // Canonical window metrics of the design system: 880x640 keeps the same
+    // proportion as the rest of the ecosystem (1.37), instead of the stretched
+    // banner of the previous layout.
+    width: CachyTheme.windowWidthSettings
+    height: CachyTheme.windowHeightSettings
     minimumWidth: 640
-    minimumHeight: 200
+    minimumHeight: 480
     visible: true
 
     // =========================================================================
@@ -209,12 +213,12 @@ CachyWindow {
             }
 
             // -----------------------------------------------------------------
-            // Superficie de la transcripción en vivo
+            // Live caption surface
             // -----------------------------------------------------------------
             CachyCard {
                 Layout.fillWidth: true
-                Layout.fillHeight: true
                 Layout.minimumWidth: 0
+                Layout.preferredHeight: 190
 
                 contentItem: ColumnLayout {
                     spacing: 6
@@ -222,7 +226,6 @@ CachyWindow {
                     Text {
                         Layout.fillWidth: true
                         Layout.minimumWidth: 0
-                        Layout.fillHeight: true
                         text: CaptionEngine.currentCaption.length > 0
                             ? CaptionEngine.currentCaption
                             : (CaptionEngine.running
@@ -250,6 +253,143 @@ CachyWindow {
                         wrapMode: Text.WordWrap
                         maximumLineCount: 2
                         elide: Text.ElideRight
+                    }
+                }
+            }
+
+            // -----------------------------------------------------------------
+            // Transcript history
+            // -----------------------------------------------------------------
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.minimumWidth: 0
+                spacing: 8
+
+                Text {
+                    text: "TRANSCRIPCIÓN"
+                    font.pixelSize: 11
+                    font.weight: Font.DemiBold
+                    color: CachyTheme.textMuted
+                }
+
+                Rectangle {
+                    Layout.preferredWidth: historyCount.implicitWidth + 12
+                    Layout.preferredHeight: 18
+                    radius: 9
+                    color: CachyTheme.surfacePill
+                    border.width: 1
+                    border.color: CachyTheme.specularBorder
+
+                    Text {
+                        id: historyCount
+                        anchors.centerIn: parent
+                        text: CaptionEngine.history.length
+                        font.pixelSize: 10
+                        font.weight: Font.DemiBold
+                        color: CachyTheme.textSecondary
+                    }
+                }
+
+                Item {
+                    Layout.fillWidth: true
+                }
+            }
+
+            // The list and its empty state live in a wrapper: the empty state
+            // must not be a child of the scrollable content, otherwise it
+            // scrolls with the entries and overlaps them.
+            Item {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                Layout.minimumWidth: 0
+
+                ListView {
+                    id: historyView
+                    anchors.fill: parent
+                    clip: true
+                    spacing: 2
+                    model: CaptionEngine.history
+                    boundsBehavior: Flickable.StopAtBounds
+                    verticalLayoutDirection: ListView.TopToBottom
+
+                delegate: Item {
+                    id: historyRow
+                    required property var modelData
+
+                    width: ListView.view ? ListView.view.width : 0
+                    height: captionText.implicitHeight + translationText.implicitHeight + 12
+
+                    Text {
+                        id: timeText
+                        x: 0
+                        y: 1
+                        width: 58
+                        text: historyRow.modelData.time ?? ""
+                        font.pixelSize: 10
+                        font.weight: Font.DemiBold
+                        color: CachyTheme.textMuted
+                        elide: Text.ElideRight
+                    }
+
+                    Text {
+                        id: captionText
+                        x: 68
+                        y: 0
+                        width: Math.max(0, historyRow.width - 68 - 8)
+                        text: historyRow.modelData.caption ?? ""
+                        font.pixelSize: 12
+                        color: CachyTheme.textPrimary
+                        wrapMode: Text.WordWrap
+                    }
+
+                    Text {
+                        id: translationText
+                        x: 68
+                        y: captionText.height + 2
+                        width: Math.max(0, historyRow.width - 68 - 8)
+                        visible: (historyRow.modelData.translation ?? "").length > 0
+                        text: "🌐 " + (historyRow.modelData.translation ?? "")
+                        font.pixelSize: 11
+                        font.italic: true
+                        color: CachyTheme.accentColor
+                        wrapMode: Text.WordWrap
+                    }
+                }
+                }
+
+                // Empty state (overlay: it never scrolls with the entries)
+                ColumnLayout {
+                    anchors.top: parent.top
+                    anchors.topMargin: 28
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    width: Math.max(0, parent.width - 40)
+                    spacing: 6
+                    visible: historyView.count === 0
+
+                    Text {
+                        Layout.fillWidth: true
+                        horizontalAlignment: Text.AlignHCenter
+                        text: "🎙️"
+                        font.pixelSize: 26
+                    }
+
+                    Text {
+                        Layout.fillWidth: true
+                        horizontalAlignment: Text.AlignHCenter
+                        text: "Sin transcripciones todavía"
+                        font.pixelSize: 12
+                        font.weight: Font.DemiBold
+                        color: CachyTheme.textSecondary
+                        wrapMode: Text.WordWrap
+                    }
+
+                    Text {
+                        Layout.fillWidth: true
+                        horizontalAlignment: Text.AlignHCenter
+                        text: "Pulsa «Iniciar» y las frases capturadas aparecerán aquí con su hora."
+                        font.pixelSize: 11
+                        color: CachyTheme.textMuted
+                        wrapMode: Text.WordWrap
                     }
                 }
             }

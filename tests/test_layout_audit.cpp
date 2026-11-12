@@ -96,9 +96,10 @@ void TestLayoutAudit::auditWindowStates_data()
     QTest::addColumn<int>("width");
     QTest::addColumn<int>("height");
 
-    QTest::newRow("minimum") << 640 << 200;
-    QTest::newRow("default") << 900 << 250;
-    QTest::newRow("wide") << 1440 << 600;
+    QTest::newRow("minimum") << 640 << 480;
+    QTest::newRow("default") << 880 << 640;
+    QTest::newRow("wide") << 1440 << 900;
+    QTest::newRow("tall") << 700 << 900;
 }
 
 void TestLayoutAudit::auditWindowStates()
@@ -132,7 +133,7 @@ void TestLayoutAudit::auditHeaderTitleSweep()
     // The title must never collide with the header clusters, whatever the
     // window width is.
     for (int width = 640; width <= 1440; width += 3) {
-        m_window->resize(width, 250);
+        m_window->resize(width, 640);
         QTest::qWait(1);
 
         const QList<LayoutAuditor::Violation> violations =
