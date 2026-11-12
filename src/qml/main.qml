@@ -25,9 +25,9 @@ import CachyOS.UI
 CachyWindow {
     id: root
 
-    // The application does not ship translation catalogues yet, so the strings
-    // are plain literals: wrapping them in an i18n call would blank them.
-    title: "KLiveCaptions — Subtítulos en Tiempo Real"
+    // Translations come from the design system helper, which always falls back
+    // to the source text when the application has no catalogue yet.
+    title: CachyI18n.i18n("KLiveCaptions — Subtítulos en Tiempo Real")
     width: 900
     height: 250
     minimumWidth: 640

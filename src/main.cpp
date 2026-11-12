@@ -14,12 +14,17 @@
 #include <QQuickWindow>
 #include <QTimer>
 
+#include <KLocalizedString>
+
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
     app.setApplicationName(QStringLiteral("klivecaptions"));
     app.setApplicationDisplayName(QStringLiteral("KLiveCaptions"));
     app.setOrganizationDomain(QStringLiteral("cesar.org"));
+
+    // Translation domain used by CachyI18n.i18n().
+    KLocalizedString::setApplicationDomain("klivecaptions");
 
     // Golden Gate parity: the application inherits the Plasma desktop style so
     // menus, tooltips and combo boxes match the rest of the CachyOS.UI
