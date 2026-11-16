@@ -162,6 +162,8 @@ QString LiveCaptionEngine::resolveWhisperModel() const
     if (!located.isEmpty()) return located;
     const QString sysModel = QStringLiteral("/usr/share/kity/models/ggml-base.bin");
     if (QFile::exists(sysModel)) return sysModel;
+    const QString kityModel = QDir::homePath() + QStringLiteral("/.local/share/kity/models/ggml-base.bin");
+    if (QFile::exists(kityModel)) return kityModel;
     const QString model = QDir::homePath() + QStringLiteral("/.local/share/kiri/models/ggml-base.bin");
     if (QFile::exists(model)) return model;
     return QString();
