@@ -59,6 +59,7 @@ private Q_SLOTS:
     void testOverlayQmlSyntax()
     {
         QQmlEngine engine;
+        engine.addImportPath(QStringLiteral("/usr/lib/qt6/qml"));
         const QString qmlFile = QStringLiteral(KLIVECAPTIONS_SOURCE_DIR) + QStringLiteral("/src/qml/main.qml");
         QVERIFY(QFile::exists(qmlFile));
         QQmlComponent comp(&engine, QUrl::fromLocalFile(qmlFile));

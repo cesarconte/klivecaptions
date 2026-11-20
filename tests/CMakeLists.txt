@@ -1,7 +1,7 @@
 find_package(Qt6Test ${QT_MIN_VERSION} REQUIRED)
 
 # The CachyOS.UI design system provides the shared layout auditor.
-list(APPEND CMAKE_PREFIX_PATH "$ENV{HOME}/.local" "/usr/local")
+list(APPEND CMAKE_PREFIX_PATH "/usr" "/usr/local")
 find_package(CachyOSUITesting REQUIRED)
 
 add_executable(test_livecaptions test_livecaptions.cpp)
@@ -41,5 +41,5 @@ target_link_libraries(test_layout_audit PRIVATE
 add_test(NAME test_layout_audit COMMAND test_layout_audit)
 
 set_tests_properties(test_layout_audit PROPERTIES
-    ENVIRONMENT "CACHYOS_UI_IMPORT_PATH=$ENV{HOME}/.local/lib/qt6/qml"
+    ENVIRONMENT "CACHYOS_UI_IMPORT_PATH=/usr/lib/qt6/qml"
 )

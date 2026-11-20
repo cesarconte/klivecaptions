@@ -149,23 +149,21 @@ double LiveCaptionEngine::computePcmRms(const QByteArray &pcmChunk)
 
 QString LiveCaptionEngine::resolveWhisperBinary() const
 {
+    const QString sysBin = QStringLiteral("/usr/bin/whisper-cli");
+    if (QFile::exists(sysBin)) return sysBin;
     QString bin = QStandardPaths::findExecutable(QStringLiteral("whisper-cli"));
     if (!bin.isEmpty()) return bin;
-    const QString localBin = QDir::homePath() + QStringLiteral("/.local/bin/whisper-cli");
-    if (QFile::exists(localBin)) return localBin;
     return QStandardPaths::findExecutable(QStringLiteral("whisper"));
 }
 
 QString LiveCaptionEngine::resolveWhisperModel() const
 {
-    const QString located = QStandardPaths::locate(QStandardPaths::GenericDataLocation, QStringLiteral("kity/models/ggml-base.bin"));
-    if (!located.isEmpty()) return located;
     const QString sysModel = QStringLiteral("/usr/share/kity/models/ggml-base.bin");
     if (QFile::exists(sysModel)) return sysModel;
-    const QString kityModel = QDir::homePath() + QStringLiteral("/.local/share/kity/models/ggml-base.bin");
-    if (QFile::exists(kityModel)) return kityModel;
-    const QString model = QDir::homePath() + QStringLiteral("/.local/share/kiri/models/ggml-base.bin");
-    if (QFile::exists(model)) return model;
+    const QString dictModel = QStringLiteral("/usr/share/kdictation/models/ggml-base.bin");
+    if (QFile::exists(dictModel)) return dictModel;
+    const QString located = QStandardPaths::locate(QStandardPaths::GenericDataLocation, QStringLiteral("kity/models/ggml-base.bin"));
+    if (!located.isEmpty()) return located;
     return QString();
 }
 

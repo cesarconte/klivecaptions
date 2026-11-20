@@ -21,6 +21,7 @@ int main(int argc, char *argv[])
     QGuiApplication app(argc, argv);
     app.setApplicationName(QStringLiteral("klivecaptions"));
     app.setApplicationDisplayName(QStringLiteral("KLiveCaptions"));
+    app.setDesktopFileName(QStringLiteral("org.cesar.klivecaptions"));
     app.setOrganizationDomain(QStringLiteral("cesar.org"));
 
     // Translation domain used by CachyI18n.i18n().
@@ -46,9 +47,8 @@ int main(int argc, char *argv[])
     LiveCaptionEngine engine;
 
     QQmlApplicationEngine qmlEngine;
-    // The CachyOS.UI design system (Liquid Glass) is installed system wide or
-    // in the user prefix.
-    qmlEngine.addImportPath(QStringLiteral("/home/cesar/.local/lib/qt6/qml"));
+    // The CachyOS.UI design system (Liquid Glass) is installed system-wide in /usr.
+    qmlEngine.addImportPath(QStringLiteral("/usr/lib/qt6/qml"));
     qmlEngine.rootContext()->setContextProperty(QStringLiteral("CaptionEngine"), &engine);
     qmlEngine.load(QUrl(QStringLiteral("qrc:/org/cesar/klivecaptions/qml/main.qml")));
 

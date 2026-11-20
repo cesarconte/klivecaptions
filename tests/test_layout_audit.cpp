@@ -30,10 +30,9 @@ namespace {
 void addImportPaths(QQmlApplicationEngine &engine)
 {
     const QStringList candidates = {
+        QStringLiteral("/usr/lib/qt6/qml"),
         qEnvironmentVariable("CACHYOS_UI_IMPORT_PATH"),
         qEnvironmentVariable("QML2_IMPORT_PATH"),
-        QDir::homePath() + QStringLiteral("/.local/lib/qt6/qml"),
-        QStringLiteral("/usr/lib/qt6/qml"),
     };
 
     for (const QString &entry : candidates) {
