@@ -5,14 +5,14 @@
     KLiveCaptions — Subtítulos en tiempo real.
 
     Diseño Golden Gate / Liquid Glass (CachyOS.UI):
-      * ventana `CachyWindow`: marco translúcido con blur de KWin, cabecera de
-        44 px con divisor duro de 1 px y radio de esquina de 20 px;
-      * acciones primarias en la cabecera (iniciar/pausar, traducir, copiar, limpiar)
-        usando `CachyToolbarButton` con iconos vectoriales temáticos;
-      * estado de captura y nivel de audio reactivo en píldora de cristal a la izquierda;
-      * selectores integrados con `CachyComboBox`;
-      * transcripción en vivo presentada sobre `CachyCard`;
-      * tipografía completa basada en `CachyLabel` y tokens de `CachyTheme`.
+      * Ventana `CachyWindow`: marco translúcido con blur de KWin, esquinas de 20 px,
+        borde especular de 1 px y cabecera limpia sin divisor duro (`showTitleBarDivider: false`).
+      * Cápsula de acciones `CachyToolbarGroup` con controles Golden Gate:
+        pausar/reanudar, alternar origen (micrófono / sistema), ajustes en `CachyPopover`,
+        copiar transcripción y limpiar.
+      * Píldora de estado reactiva en `headerLeading` con vúmetro y estado de audio.
+      * Tipografía de alto contraste con tamaño ajustable y desplazamiento fluido.
+      * Paleta resuelta íntegramente mediante tokens de `CachyPalette` y `CachyTheme`.
 */
 
 pragma ComponentBehavior: Bound
@@ -33,17 +33,20 @@ CachyWindow {
     visible: true
 
     // =========================================================================
-    // Geometría canónica Golden Gate
+    // Geometría canónica Golden Gate (macOS 27 Liquid Glass)
     // =========================================================================
     showTrafficLights: true
-    showTitleBarDivider: true          // divisor duro de 1 px
+    showTitle: false
+    showTitleBarDivider: false         // Barra flotante continua Liquid Glass
     showWindowFrame: true              // Liquid Glass: blur KWin + rim especular
     resizable: true
     cornerRadius: CachyTheme.radiusWindow
-    contentPadded: true                // margen perimetral de 18 px
+    contentPadded: true                // Margen perimetral de 18 px
+
+    property int captionFontSize: 20   // Ajustable en ajustes: 16, 20 o 26 px
 
     // =========================================================================
-    // CABECERA — IZQUIERDA: estado de la captura y nivel de audio
+    // CABECERA — IZQUIERDA: estado de la captura y vúmetro reactivo
     // =========================================================================
     headerLeading: [
         Rectangle {
@@ -68,7 +71,7 @@ CachyWindow {
                     Layout.preferredWidth: 9
                     Layout.preferredHeight: 9
                     radius: 4.5
-                    color: CaptionEngine.running ? "#30D158" : CachyTheme.textMuted
+                    color: CaptionEngine.running ? "#30D158" : CachyPalette.textMuted
                     scale: CaptionEngine.running ? (1.0 + CaptionEngine.audioLevel * 0.45) : 1.0
 
                     Behavior on scale {
@@ -76,10 +79,16 @@ CachyWindow {
                     }
                 }
 
+                CachyIcon {
+                    name: CaptionEngine.captureSource === "sink" ? "volume" : "microphone"
+                    size: 13
+                    color: CaptionEngine.running ? CachyTheme.accentColor : CachyPalette.textSecondary
+                }
+
                 CachyLabel {
                     Layout.fillWidth: true
                     Layout.minimumWidth: 0
-                    Layout.maximumWidth: 230
+                    Layout.maximumWidth: 220
                     text: CaptionEngine.statusText
                     font.pixelSize: 11
                     color: CachyPalette.textSecondary
@@ -90,16 +99,16 @@ CachyWindow {
     ]
 
     // =========================================================================
-    // CABECERA — DERECHA: acciones primarias
+    // CABECERA — DERECHA: acciones agrupadas en cápsula Golden Gate
     // =========================================================================
     headerActions: [
-        RowLayout {
+        CachyToolbarGroup {
             anchors.verticalCenter: parent.verticalCenter
-            spacing: 6
 
-            // Iniciar / Detener la captura
+            // Iniciar / Pausar la captura
             CachyToolbarButton {
-                iconName: CaptionEngine.running ? "media-playback-pause" : "media-playback-start"
+                pillStyle: false
+                iconName: CaptionEngine.running ? "pause" : "play"
                 tooltipText: CaptionEngine.running
                     ? CachyI18n.i18n("Pausar la captura")
                     : CachyI18n.i18n("Iniciar la captura")
@@ -107,31 +116,39 @@ CachyWindow {
                 onClicked: CaptionEngine.toggleCapture()
             }
 
-            // Traducción en vivo (conmutable)
+            // Alternar origen de captura: audio del sistema vs micrófono
             CachyToolbarButton {
-                checkable: true
-                checked: CaptionEngine.translateEnabled
-                iconName: "preferences-desktop-locale"
-                tooltipText: CachyI18n.i18n("Traducir la transcripción en vivo")
-                onToggled: (nextState) => CaptionEngine.translateEnabled = nextState
+                pillStyle: false
+                iconName: CaptionEngine.captureSource === "sink" ? "volume" : "microphone"
+                tooltipText: CaptionEngine.captureSource === "sink"
+                    ? CachyI18n.i18n("Fuente: Audio del sistema (clic para cambiar a micrófono)")
+                    : CachyI18n.i18n("Fuente: Micrófono (clic para cambiar a audio del sistema)")
+                onClicked: {
+                    CaptionEngine.captureSource = (CaptionEngine.captureSource === "sink" ? "mic" : "sink");
+                }
             }
 
-            // Separador duro antes de las acciones secundarias / destructivas
-            Rectangle {
-                Layout.preferredWidth: 1
-                Layout.preferredHeight: 18
-                Layout.alignment: Qt.AlignVCenter
-                color: CachyTheme.hardDividerColor
+            // Ajustes de subtítulos y traducción en CachyPopover
+            CachyToolbarButton {
+                id: settingsBtn
+                pillStyle: false
+                iconName: "settings"
+                tooltipText: CachyI18n.i18n("Ajustes de subtítulos, fuente e idioma")
+                onClicked: settingsPopover.openAt(settingsBtn)
             }
 
+            // Copiar transcripción completa
             CachyToolbarButton {
-                iconName: "edit-copy"
+                pillStyle: false
+                iconName: "copy"
                 tooltipText: CachyI18n.i18n("Copiar la transcripción al portapapeles")
                 onClicked: CaptionEngine.copyAllTranscript()
             }
 
+            // Limpiar subtítulos
             CachyToolbarButton {
-                iconName: "edit-clear"
+                pillStyle: false
+                iconName: "trash"
                 tooltipText: CachyI18n.i18n("Limpiar los subtítulos")
                 onClicked: CaptionEngine.clearCaptions()
             }
@@ -139,42 +156,73 @@ CachyWindow {
     ]
 
     // =========================================================================
-    // CONTENIDO
+    // POPOVER DE AJUSTES (macOS Golden Gate)
     // =========================================================================
-    contentData: [
-        ColumnLayout {
-            anchors.fill: parent
-            spacing: CachyTheme.spacingMedium
+    CachyPopover {
+        id: settingsPopover
+        preferredWidth: 320
+        preferredEdge: Qt.BottomEdge
 
-            // -----------------------------------------------------------------
-            // Barra de configuración: origen del audio e idiomas
-            // -----------------------------------------------------------------
-            RowLayout {
+        ColumnLayout {
+            spacing: 12
+            width: parent.width
+
+            CachyLabel {
+                text: CachyI18n.i18n("Ajustes de Subtítulos")
+                font.pixelSize: 13
+                font.weight: Font.DemiBold
+                color: CachyPalette.text
+            }
+
+            // Selector de tamaño de fuente
+            ColumnLayout {
                 Layout.fillWidth: true
                 Layout.minimumWidth: 0
-                spacing: 8
+                spacing: 4
 
-                // Origen de la captura: audio del sistema o micrófono
-                CachyComboBox {
-                    id: sourceCombo
-                    Layout.preferredWidth: 180
-                    Layout.preferredHeight: 32
-                    model: [
-                        { value: "sink", label: CachyI18n.i18n("Audio del sistema") },
-                        { value: "mic", label: CachyI18n.i18n("Micrófono") }
-                    ]
-                    textRole: "label"
-                    currentIndex: CaptionEngine.captureSource === "sink" ? 0 : 1
-                    onActivated: index => CaptionEngine.captureSource = sourceCombo.model[index].value
+                CachyLabel {
+                    text: CachyI18n.i18n("Tamaño de texto")
+                    font.pixelSize: 11
+                    color: CachyPalette.textSecondary
                 }
 
-                // Idioma de origen
-                CachyComboBox {
-                    id: languageCombo
-                    Layout.preferredWidth: 110
-                    Layout.preferredHeight: 32
+                CachySegmentedControl {
+                    id: fontSegControl
+                    Layout.fillWidth: true
+                    Layout.minimumWidth: 0
                     model: [
-                        { value: "auto", label: CachyI18n.i18n("Auto") },
+                        CachyI18n.i18n("Normal"),
+                        CachyI18n.i18n("Grande"),
+                        CachyI18n.i18n("Extra")
+                    ]
+                    currentIndex: root.captionFontSize === 16 ? 0 : (root.captionFontSize === 26 ? 2 : 1)
+                    onCurrentIndexChanged: {
+                        if (currentIndex === 0) root.captionFontSize = 16;
+                        else if (currentIndex === 2) root.captionFontSize = 26;
+                        else root.captionFontSize = 20;
+                    }
+                }
+            }
+
+            // Selector de idioma de origen
+            ColumnLayout {
+                Layout.fillWidth: true
+                Layout.minimumWidth: 0
+                spacing: 4
+
+                CachyLabel {
+                    text: CachyI18n.i18n("Idioma de audio")
+                    font.pixelSize: 11
+                    color: CachyPalette.textSecondary
+                }
+
+                CachyComboBox {
+                    id: popLanguageCombo
+                    Layout.fillWidth: true
+                    Layout.minimumWidth: 0
+                    Layout.preferredHeight: 30
+                    model: [
+                        { value: "auto", label: CachyI18n.i18n("Detección automática") },
                         { value: "es", label: "Español (ES)" },
                         { value: "en", label: "English (EN)" },
                         { value: "fr", label: "Français (FR)" },
@@ -182,30 +230,77 @@ CachyWindow {
                     ]
                     textRole: "label"
                     currentIndex: {
-                        const index = languageCombo.model.findIndex(entry => entry.value === CaptionEngine.sourceLanguage);
-                        return index >= 0 ? index : 0;
+                        const idx = model.findIndex(entry => entry.value === CaptionEngine.sourceLanguage);
+                        return idx >= 0 ? idx : 0;
                     }
-                    onActivated: index => CaptionEngine.sourceLanguage = languageCombo.model[index].value
-                }
-
-                // Idioma de destino de la traducción
-                CachyComboBox {
-                    id: targetLanguageCombo
-                    Layout.preferredWidth: 140
-                    Layout.preferredHeight: 32
-                    visible: CaptionEngine.translateEnabled
-                    model: ["Español", "English", "Français", "Deutsch", "Italiano"]
-                    currentIndex: Math.max(0, targetLanguageCombo.model.indexOf(CaptionEngine.targetLanguage))
-                    onActivated: index => CaptionEngine.targetLanguage = targetLanguageCombo.model[index]
-                }
-
-                Item {
-                    Layout.fillWidth: true
+                    onActivated: index => CaptionEngine.sourceLanguage = model[index].value
                 }
             }
 
+            // Separador
+            Rectangle {
+                Layout.fillWidth: true
+                height: 1
+                color: CachyPalette.specularBorder
+            }
+
+            // Traducción en vivo con CachySwitch
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.minimumWidth: 0
+                spacing: 8
+
+                CachyLabel {
+                    Layout.fillWidth: true
+                    Layout.minimumWidth: 0
+                    text: CachyI18n.i18n("Traducción en vivo")
+                    font.pixelSize: 12
+                    font.weight: Font.Medium
+                    color: CachyPalette.text
+                }
+
+                CachySwitch {
+                    checked: CaptionEngine.translateEnabled
+                    onToggled: CaptionEngine.translateEnabled = checked
+                }
+            }
+
+            // Idioma de destino
+            ColumnLayout {
+                Layout.fillWidth: true
+                Layout.minimumWidth: 0
+                visible: CaptionEngine.translateEnabled
+                spacing: 4
+
+                CachyLabel {
+                    text: CachyI18n.i18n("Traducir a")
+                    font.pixelSize: 11
+                    color: CachyPalette.textSecondary
+                }
+
+                CachyComboBox {
+                    id: popTargetLanguageCombo
+                    Layout.fillWidth: true
+                    Layout.minimumWidth: 0
+                    Layout.preferredHeight: 30
+                    model: ["Español", "English", "Français", "Deutsch", "Italiano"]
+                    currentIndex: Math.max(0, model.indexOf(CaptionEngine.targetLanguage))
+                    onActivated: index => CaptionEngine.targetLanguage = model[index]
+                }
+            }
+        }
+    }
+
+    // =========================================================================
+    // CONTENIDO PRINCIPAL: Lienzo de subtítulos de alto contraste e historial
+    // =========================================================================
+    contentData: [
+        ColumnLayout {
+            anchors.fill: parent
+            spacing: CachyTheme.spacingMedium
+
             // -----------------------------------------------------------------
-            // Superficie de subtítulos en vivo (CachyCard)
+            // Superficie de subtítulos en vivo (CachyCard Liquid Glass)
             // -----------------------------------------------------------------
             CachyCard {
                 Layout.fillWidth: true
@@ -226,8 +321,8 @@ CachyWindow {
                         color: CaptionEngine.currentCaption.length > 0
                             ? CachyPalette.text
                             : CachyPalette.textMuted
-                        font.pixelSize: 18
-                        font.weight: Font.Medium
+                        font.pixelSize: root.captionFontSize
+                        font.weight: Font.DemiBold
                         wrapMode: Text.WordWrap
                         maximumLineCount: 3
                         elide: Text.ElideRight
@@ -242,7 +337,7 @@ CachyWindow {
 
                         CachyIcon {
                             Layout.alignment: Qt.AlignVCenter
-                            name: "preferences-desktop-locale"
+                            name: "globe"
                             size: 15
                             color: CachyTheme.accentColor
                         }
@@ -252,7 +347,7 @@ CachyWindow {
                             Layout.minimumWidth: 0
                             text: CaptionEngine.currentTranslation
                             color: CachyTheme.accentColor
-                            font.pixelSize: 15
+                            font.pixelSize: Math.max(13, root.captionFontSize - 4)
                             font.italic: true
                             wrapMode: Text.WordWrap
                             maximumLineCount: 2
@@ -356,7 +451,7 @@ CachyWindow {
                             spacing: 5
 
                             CachyIcon {
-                                name: "preferences-desktop-locale"
+                                name: "globe"
                                 size: 12
                                 color: CachyTheme.accentColor
                             }
@@ -384,7 +479,7 @@ CachyWindow {
 
                     CachyIcon {
                         Layout.alignment: Qt.AlignHCenter
-                        name: "audio-input-microphone"
+                        name: "microphone"
                         size: 32
                         color: CachyPalette.textMuted
                     }

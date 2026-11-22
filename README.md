@@ -18,19 +18,19 @@ KLiveCaptions proporciona funcionalidad avanzada de subtítulos y traducción en
 ```bash
 # 1. El sistema de diseño (módulo QML + auditor de layout) debe estar instalado
 cd ../cachyos-ui
-cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/
+cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
 cmake --build build -j"$(nproc)"
-DESTDIR=$HOME/.local cmake --install build
+sudo -n cmake --install build --prefix /usr
 
 # 2. La aplicación
 cd ../klivecaptions
-cmake -B build -S . -DCMAKE_INSTALL_PREFIX=$HOME/.local -DBUILD_TESTING=ON
+cmake -B build -S . -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_TESTING=ON
 cmake --build build
 ctest --test-dir build --output-on-failure
-cmake --install build
+sudo -n cmake --install build --prefix /usr
 ```
 
 Para ejecutar:
 ```bash
-~/.local/bin/klivecaptions
+klivecaptions
 ```
